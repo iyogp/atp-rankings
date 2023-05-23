@@ -37,6 +37,11 @@ def get_table_data(soup):
 def clean_string(some_string):
     return some_string.strip()
 
+def get_rank(row):
+    rank_cell = row.find('td', {'class': "rank-cell"})
+    rank = rank_cell.get_text()
+    return clean_string(rank)
+
 def get_player_name(row):
     player_cell = row.find('td', {'class': "player-cell"})
     player_name = player_cell.find('a').get_text()
@@ -52,6 +57,26 @@ def get_move_cell(row):
                 return None
             else:
                 return clean_string(move.get_text())
+            
+def get_country(row):
+    country_cell = row.find('td', {'class': "country-cell"})
+    country = country_cell.find('img')['alt']
+    return clean_string(country)
+
+def get_age(row):
+    age_cell = row.find('td', {'class': "age-cell"})
+    age = int(clean_string(age_cell.get_text()))
+    return age
+
+def get_points(row):
+    points_cell = row.find('td', {'class': "points-cell"})
+    points = clean_string(points_cell.find('a').get_text().replace(",", ""))
+    return points
+
+def get_tourns_played(row):
+    tourn_cell = row.find('td', {'class': 'tourn-cell'})
+    tourn = int(clean_string(tourn_cell.find('a').get_text()))
+    return tourn
 
 
 if __name__ == "__main__":
@@ -65,6 +90,11 @@ if __name__ == "__main__":
     table, head, body = get_table_data(soup)
 
     for row in body:
+        rank = get_rank(row)
         name = get_player_name(row)
         move = get_move_cell(row)
-        print(name, move)
+        country = get_country(row)
+        age = get_age(row)
+        points = get_points(row)
+        tourn = get_tourns_played(row)
+        print(rank, name, move, country, age, points, tourn)
