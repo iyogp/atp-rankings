@@ -3,7 +3,7 @@ import requests
 
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
-# import pandas as pd
+import pandas as pd
 
 
 load_dotenv()
@@ -25,6 +25,9 @@ MAPPING = {
 }
 
 
+def clean_string(some_string):
+    return some_string.strip()
+
 def get_table_rows(table, row_type):
     return table.find(row_type).find_all('tr')
 
@@ -34,8 +37,10 @@ def get_table_data(soup):
     body = get_table_rows(table, 'tbody')
     return (table, head, body)
 
-def clean_string(some_string):
-    return some_string.strip()
+def get_current_week(soup):
+    week_tag = soup.find('ul', {'class': 'dropdown', 'data-value': 'rankDate'})
+    current_week = clean_string(week_tag.find('li', {'class': 'current'}).get_text())
+    return current_week
 
 def get_rank(row):
     rank_cell = row.find('td', {'class': "rank-cell"})
@@ -106,6 +111,10 @@ if __name__ == "__main__":
 
     soup = BeautifulSoup(content, 'html.parser')
 
+    current_week = get_current_week(soup)
+
+    print(current_week)
+
     table, head, body = get_table_data(soup)
 
     data = []
@@ -113,4 +122,5 @@ if __name__ == "__main__":
         result = transform(row)
         data.append(result)
     
-    print(data)
+    df = pd.DataFrame.from_records(data)
+    # df.to_csv()
