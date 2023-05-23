@@ -78,6 +78,25 @@ def get_tourns_played(row):
     tourn = int(clean_string(tourn_cell.find('a').get_text()))
     return tourn
 
+def transform(row):
+    rank = get_rank(row)
+    name = get_player_name(row)
+    age = get_age(row)
+    move = get_move_cell(row)
+    country = get_country(row)
+    points = get_points(row)
+    tourns = get_tourns_played(row)
+    data = {
+        'rank': rank,
+        'name': name,
+        'age': age,
+        'move': move,
+        'country': country,
+        'points': points,
+        'tourns': tourns
+    }
+    return data
+
 
 if __name__ == "__main__":
     headers = {'User-Agent': USER_AGENT}
@@ -89,12 +108,9 @@ if __name__ == "__main__":
 
     table, head, body = get_table_data(soup)
 
+    data = []
     for row in body:
-        rank = get_rank(row)
-        name = get_player_name(row)
-        move = get_move_cell(row)
-        country = get_country(row)
-        age = get_age(row)
-        points = get_points(row)
-        tourn = get_tourns_played(row)
-        print(rank, name, move, country, age, points, tourn)
+        result = transform(row)
+        data.append(result)
+    
+    print(data)
