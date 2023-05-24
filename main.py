@@ -14,18 +14,6 @@ URL = "https://www.atptour.com/en/rankings/singles?rankRange=0-250"
 USER_AGENT = os.getenv("USER_AGENT")
 
 
-MAPPING = {
-    "RANK": "rank-cell", 
-    "MOVE": "move-cell", 
-    "COUNTRY": "country-cell", 
-    "PLAYER": "player-cell", 
-    "AGE": "age-cell", 
-    "POINTS": "points-cell", 
-    "POINTS MOVE": "points-move-cell", 
-    "TOURNAMENT_PLAYED": "tourn-cell"
-}
-
-
 def clean_string(some_string):
     return some_string.strip()
 
