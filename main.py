@@ -108,7 +108,7 @@ if __name__ == "__main__":
     logging.info("-"*50)
     logging.info(f"Scrapping ATP rankings for week: {current_week}")
 
-    table, head, body = get_table_data(soup)
+    _, _, body = get_table_data(soup)
 
     data = []
     for row in body:
