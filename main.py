@@ -1,15 +1,16 @@
 import os
 import requests
+import logging
 
-from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 import pandas as pd
 
 
-load_dotenv()
+format = "%(asctime)s - %(levelname)s : %(message)s"
+logging.basicConfig(level=logging.INFO, format=format)
 
-URL = os.getenv("URL")
-TABLE_ID = os.getenv("TABLE_ID")
+
+URL = "https://www.atptour.com/en/rankings/singles?rankRange=0-250"
 USER_AGENT = os.getenv("USER_AGENT")
 
 
@@ -32,7 +33,7 @@ def get_table_rows(table, row_type):
     return table.find(row_type).find_all('tr')
 
 def get_table_data(soup):
-    table = soup.find('table', {'id': TABLE_ID})
+    table = soup.find('table', {'id': 'player-rank-detail-ajax'})
     head = get_table_rows(table, 'thead')
     body = get_table_rows(table, 'tbody')
     return (table, head, body)
@@ -40,7 +41,7 @@ def get_table_data(soup):
 def get_current_week(soup):
     week_tag = soup.find('ul', {'class': 'dropdown', 'data-value': 'rankDate'})
     current_week = clean_string(week_tag.find('li', {'class': 'current'}).get_text())
-    return current_week
+    return current_week.replace(".", "_")
 
 def get_rank(row):
     rank_cell = row.find('td', {'class': "rank-cell"})
@@ -101,10 +102,13 @@ def transform(row):
         'tourns': tourns
     }
     return data
-
+    
 
 if __name__ == "__main__":
-    headers = {'User-Agent': USER_AGENT}
+    logging.info("-"*50)
+    logging.info(">>> Started ATP Rankings Scrapper")
+
+    headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
     response = requests.get(URL, headers=headers)
     content = response.content
@@ -113,7 +117,8 @@ if __name__ == "__main__":
 
     current_week = get_current_week(soup)
 
-    print(current_week)
+    logging.info("-"*50)
+    logging.info(f"Scrapping ATP rankings for week: {current_week}")
 
     table, head, body = get_table_data(soup)
 
@@ -123,4 +128,15 @@ if __name__ == "__main__":
         data.append(result)
     
     df = pd.DataFrame.from_records(data)
-    # df.to_csv()
+    
+    cwd = os.getcwd()
+    filename = f"rankings-{current_week.lower()}.csv"
+    output_path = os.path.join(cwd, "data", filename)
+
+    df.to_csv(output_path)
+
+    logging.info(f"Output File: {output_path}")
+    logging.info("-"*50)
+
+    logging.info(">>> Finished ATP Rankings Scrapper")
+    logging.info("-"*50)
