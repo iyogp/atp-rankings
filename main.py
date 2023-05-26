@@ -10,7 +10,8 @@ format = "%(asctime)s - %(levelname)s : %(message)s"
 logging.basicConfig(level=logging.INFO, format=format)
 
 
-URL = "https://www.atptour.com/en/rankings/singles?rankRange=0-250"
+URL = "https://www.atptour.com/en/rankings/singles/$week_to_extract?rankRange=0-250"
+HEADERS = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 USER_AGENT = os.getenv("USER_AGENT")
 
 
@@ -90,41 +91,33 @@ def transform(row):
         'tourns': tourns
     }
     return data
-    
 
-if __name__ == "__main__":
-    logging.info("-"*50)
-    logging.info(">>> Started ATP Rankings Scrapper")
-
-    headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-
-    response = requests.get(URL, headers=headers)
+def get_rank_dates():
+    url = URL.replace("/$week_to_extract", "")
+    response = requests.get(url, headers=HEADERS)
     content = response.content
-
     soup = BeautifulSoup(content, 'html.parser')
+    ul_rank_dates = soup.find('ul', {'data-value': "rankDate"})
+    rank_dates = [clean_string(rank_date.get_text().replace(".", "_")) for rank_date in ul_rank_dates.find_all('li')]
+    return rank_dates
 
+def scrape_atp_rankings(week_to_extract):
+    url = URL.replace("$week_to_extract", week_to_extract)
+    response = requests.get(url, headers=HEADERS)
+    content = response.content
+    soup = BeautifulSoup(content, 'html.parser')
     current_week = get_current_week(soup)
-
-    logging.info("-"*50)
-    logging.info(f"Scrapping ATP rankings for week: {current_week}")
-
     _, _, body = get_table_data(soup)
-
     data = []
     for row in body:
         result = transform(row)
         data.append(result)
-    
     df = pd.DataFrame.from_records(data)
-    
     cwd = os.getcwd()
     filename = f"rankings-{current_week.lower()}.csv"
-    output_path = os.path.join(cwd, "data", filename)
-
+    output_path = os.path.join(cwd, "data", filename) # ~/atp-rankings/data
     df.to_csv(output_path)
 
-    logging.info(f"Output File: {output_path}")
-    logging.info("-"*50)
 
-    logging.info(">>> Finished ATP Rankings Scrapper")
-    logging.info("-"*50)
+if __name__ == "__main__":
+    scrape_atp_rankings("current")
