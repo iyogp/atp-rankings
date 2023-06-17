@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          deactivate
+          source deactivate
       - name: Extract current week
         run: python main.py
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
