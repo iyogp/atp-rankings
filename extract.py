@@ -1,4 +1,3 @@
-import os
 import requests
 import logging
 
@@ -10,9 +9,8 @@ logging.basicConfig(level=logging.INFO, format=format)
 
 URL = "https://www.atptour.com/en/rankings/singles?rankRange=0-250&rankDate=$week_to_extract"
 HEADERS = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-USER_AGENT = os.getenv("USER_AGENT")
 
-YEAR_LIMIT = 2020 # collect ATP rankings data from 2005 to current
+YEAR_LIMIT = 2005 # collect ATP rankings data from 2005 to current
 
 
 def clean_string(some_string):
@@ -26,11 +24,6 @@ def get_table_data(soup):
     head = get_table_rows(table, 'thead')
     body = get_table_rows(table, 'tbody')
     return (table, head, body)
-
-def get_current_week(soup):
-    week_tag = soup.find('ul', {'class': 'dropdown', 'data-value': 'rankDate'})
-    current_week = clean_string(week_tag.find('li', {'class': 'current'}).get_text())
-    return current_week.replace(".", "_")
 
 def get_rank(row):
     rank_cell = row.find('td', {'class': "rank-cell"})
@@ -73,7 +66,7 @@ def get_tourns_played(row):
     tourn = int(clean_string(tourn_cell.find('a').get_text()))
     return tourn
 
-def transform(row):
+def extract(row):
     rank = get_rank(row)
     name = get_player_name(row)
     age = get_age(row)
@@ -102,11 +95,19 @@ def _process_rank_dates(li_rank_dates):
         rank_dates.append(_rank_date)
     return rank_dates
 
-def get_rank_dates():
+def get_current_week(soup):
+    week_tag = soup.find('ul', {'class': 'dropdown', 'data-value': 'rankDate'})
+    current_week = clean_string(week_tag.find('li', {'class': 'current'}).get_text())
+    return current_week.replace(".", "_")
+
+def get_rank_dates(current=False):
     url = URL.replace("/$week_to_extract", "")
     response = requests.get(url, headers=HEADERS)
     content = response.content
     soup = BeautifulSoup(content, 'html.parser')
+    if current == True:
+        current_week = get_current_week(soup)
+        return current_week
     ul_rank_dates = soup.find('ul', {'data-value': "rankDate"})
     li_rank_dates = ul_rank_dates.find_all("li")
     rank_dates = _process_rank_dates(li_rank_dates)
@@ -121,7 +122,7 @@ def scrape_atp_rankings(week_to_extract):
     _, _, body = get_table_data(soup)
     data = []
     for row in body:
-        result = transform(row)
+        result = extract(row)
         result.update({'week': week_to_extract})
         data.append(result)
     return data
