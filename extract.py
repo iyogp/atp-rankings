@@ -1,4 +1,3 @@
-import os
 import requests
 import logging
 
@@ -10,7 +9,6 @@ logging.basicConfig(level=logging.INFO, format=format)
 
 URL = "https://www.atptour.com/en/rankings/singles?rankRange=0-250&rankDate=$week_to_extract"
 HEADERS = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-USER_AGENT = os.getenv("USER_AGENT")
 
 YEAR_LIMIT = 2005 # collect ATP rankings data from 2005 to current
 
