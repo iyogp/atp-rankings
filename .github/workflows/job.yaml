@@ -1,22 +1,19 @@
-name: GitHub Actions Demo
+name: Extract Current Week ATP Rankings
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
-  extract_current_week_atp_rankings-test:
+  extraction:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "Job is now running on a ${{ runner.os }} server hosted by GitHub."
-      - run: echo "Branch is ${{ github.ref }} and repository is ${{ github.repository }}."
+      - run: echo "${{ runner.os }}"
+      - run: echo "Repository is ${{ github.repository }} on branch ${{ github.ref }}."
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Prepare environment
         run: |
-          echo "Creating virtual"
           python -m venv env
           source env/bin/activate
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+          pip install -r requirements.txt
       - name: Extract current week
-        run: python main.py
+        run: python test.py
       - run: echo "Job status ${{ job.status }}."
